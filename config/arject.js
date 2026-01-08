@@ -1,23 +1,34 @@
 import arcjet, { detectBot, shield, tokenBucket } from "@arcjet/node";
 
+// Use DRY_RUN in development, LIVE in production
+const MODE = process.env.NODE_ENV === "production" ? "LIVE" : "DRY_RUN";
+
+// Optional warning if key is missing
+if (!process.env.ARCJET_KEY) {
+  console.warn("⚠️ ARCJET_KEY is missing");
+}
+
 const aj = arcjet({
   key: process.env.ARCJET_KEY,
   rules: [
-    shield({ mode: "LIVE" }),
-    // Create a bot detection rule
+    // Basic protection (XSS, SQLi, etc.)
+    shield({ mode: MODE }),
+
+    // Bot detection
     detectBot({
-      mode: "LIVE", // Blocks requests. Use "DRY_RUN"
+      mode: MODE, // DRY_RUN in dev, LIVE in prod
       allow: [
-        "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+        "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc.
+        "CATEGORY:API_CLIENT", // Allows Postman / API tools in dev
       ],
     }),
 
+    // Rate limiting (relaxed for dev)
     tokenBucket({
-      mode: "LIVE",
-
-      refillRate: 5, // Refill 5 tokens per interval
-      interval: 10, // Refill every 10 seconds
-      capacity: 10, // Bucket capacity of 10 tokens
+      mode: MODE,
+      refillRate: MODE === "LIVE" ? 5 : 50,
+      interval: 10,
+      capacity: MODE === "LIVE" ? 10 : 100,
     }),
   ],
 });
