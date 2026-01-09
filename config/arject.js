@@ -1,7 +1,14 @@
 import arcjet, { detectBot, shield, tokenBucket } from "@arcjet/node";
 
-// Use DRY_RUN in development, LIVE in production
-const MODE = process.env.NODE_ENV === "production" ? "LIVE" : "DRY_RUN";
+/**
+ * 🔥 CONTROL THIS FLAG FOR TESTING
+ * true  → Arcjet blocks locally
+ * false → Normal dev behavior (DRY_RUN)
+ */
+const FORCE_LIVE = false;
+
+const MODE =
+  FORCE_LIVE || process.env.NODE_ENV === "production" ? "LIVE" : "DRY_RUN";
 
 // Optional warning if key is missing
 if (!process.env.ARCJET_KEY) {
@@ -11,24 +18,26 @@ if (!process.env.ARCJET_KEY) {
 const aj = arcjet({
   key: process.env.ARCJET_KEY,
   rules: [
-    // Basic protection (XSS, SQLi, etc.)
+    // 🛡️ Basic protection (XSS, SQLi, etc.)
     shield({ mode: MODE }),
 
-    // Bot detection
+    // 🤖 Bot detection (FIXED)
     detectBot({
-      mode: MODE, // DRY_RUN in dev, LIVE in prod
+      mode: MODE,
       allow: [
-        "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc.
-        "CATEGORY:API_CLIENT", // Allows Postman / API tools in dev
+        // ✅ Only valid Arcjet categories
+        "CATEGORY:SEARCH_ENGINE",
+        "CATEGORY:AI",
+        "CATEGORY:MONITORING",
       ],
     }),
 
-    // Rate limiting (relaxed for dev)
+    // 🚦 Rate limiting
     tokenBucket({
       mode: MODE,
-      refillRate: MODE === "LIVE" ? 5 : 50,
-      interval: 10,
-      capacity: MODE === "LIVE" ? 10 : 100,
+      refillRate: MODE === "LIVE" ? 1 : 50,
+      interval: 60,
+      capacity: MODE === "LIVE" ? 3 : 100,
     }),
   ],
 });

@@ -9,9 +9,12 @@ export const {
   DB_URI,
   JWT_SECRET,
   JWT_EXPIRES_IN,
-  ARJECT_KEY,
-  ARJECT_ENV,
+  ARCJET_KEY,
   QSTASH_URL,
   QSTASH_TOKEN,
   EMAIL_PASSWORD,
 } = process.env;
+
+if (!process.env.PORT || isNaN(Number(process.env.PORT))) {
+  throw new Error("PORT must be a valid number in env file");
+}

@@ -1,14 +1,16 @@
-import express from "express";
 import cookieParser from "cookie-parser";
+import express from "express";
 import { PORT } from "./config/env.js";
 
 import connectToDatabase from "./database/mongodb.js";
+import arjectMiddleware from "./middlewares/arject.middleware.js";
+import errorMiddleware from "./middlewares/error.middleware.js";
 import authRouter from "./routes/auth.routes.js";
 import subscriptionRouter from "./routes/subscription.routes.js";
 import userRouter from "./routes/user.routes.js";
-import errorMiddleware from "./middlewares/error.middleware.js";
-import arjectMiddleware from "./middlewares/arject.middleware.js";
 import workflowRouter from "./routes/workflow.routes.js";
+
+console.log("PORT VALUE =", PORT, "| TYPE =", typeof PORT);
 
 const app = express();
 
@@ -28,7 +30,7 @@ app.get("/", (req, res) => {
   res.send("Welcome to the Subscription Tracker API!");
 });
 
-app.listen(PORT, async () => {
+app.listen(Number(PORT), async () => {
   console.log(
     `Subscription Tracker API is running on http://localhost:${PORT}`
   );
