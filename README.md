@@ -1,35 +1,36 @@
 ```md
 # 📦 Subscription Tracker API
 
-A **production-grade REST API** for managing user subscriptions (Netflix, Spotify, etc.) built with **Node.js, Express, MongoDB**, secured using **Arcjet**, automated with **Upstash Workflow**, and supporting **email notifications** via **Gmail App Passwords**.
+A **production-grade REST API** for managing user subscriptions (Netflix, Spotify, etc.) built using **Node.js, Express, MongoDB**, secured with **Arcjet**, automated using **Upstash Workflow**, and supporting **email notifications** via **Gmail App Password**.
 
-This README is **self-sufficient**.
-If someone follows it step by step, they can build the entire project **without any external resource**.
-
----
-
-## 🧠 Tech Stack
-
-- Node.js (ES Modules)
-- Express.js
-- MongoDB + Mongoose
-- JWT Authentication
-- Arcjet (security, bot detection, rate limiting)
-- Upstash QStash + Workflow
-- Nodemailer (Gmail App Password)
-- dotenv
+This README is **complete and standalone**.
+Anyone can build the **entire project from scratch** by following the steps below — **no external resources required**.
 
 ---
 
-## 📁 Folder Structure
+# 🧠 Tech Stack
+
+- **Node.js** (ES Modules)
+- **Express.js**
+- **MongoDB + Mongoose**
+- **JWT Authentication**
+- **Arcjet** (Bot detection, rate limiting, security)
+- **Upstash QStash + Workflow**
+- **Nodemailer** (Gmail App Password)
+- **dotenv**
+
+---
+
+# 📁 Project Folder Structure
 ```
 
+```text
 subscription-tracker/
 │
 ├── config/
-│ ├── env.js
-│ ├── arject.js
-│ └── upstash.js
+│ ├── env.js # Environment variable loader
+│ ├── arject.js # Arcjet security configuration
+│ └── upstash.js # Upstash QStash / Workflow client
 │
 ├── controllers/
 │ ├── auth.controller.js
@@ -37,12 +38,12 @@ subscription-tracker/
 │ └── workflow.controller.js
 │
 ├── database/
-│ └── mongodb.js
+│ └── mongodb.js # MongoDB connection logic
 │
 ├── middlewares/
-│ ├── auth.middleware.js
-│ ├── arject.middleware.js
-│ └── error.middleware.js
+│ ├── auth.middleware.js # JWT authorization middleware
+│ ├── arject.middleware.js # Arcjet middleware
+│ └── error.middleware.js # Global error handler
 │
 ├── models/
 │ ├── user.model.js
@@ -59,44 +60,48 @@ subscription-tracker/
 ├── app.js
 ├── package.json
 └── README.md
+```
 
 ````
 
 ---
 
-## ⚙️ Project Setup (Step by Step)
+# ⚙️ Step-by-Step Project Setup
 
-### 1️⃣ Clone & Install
+---
+
+## 1️⃣ Clone Repository & Install Dependencies
 
 ```bash
-git clone <repo-url>
+git clone <repository-url>
 cd subscription-tracker
 npm install
 ````
 
 ---
 
-## 🗄️ MongoDB Setup
+## 2️⃣ MongoDB Setup (Database)
 
-### Option 1: Local MongoDB
+### Option A — Local MongoDB
 
 ```text
 mongodb://127.0.0.1:27017/subscription-tracker
 ```
 
-### Option 2: MongoDB Atlas
+### Option B — MongoDB Atlas
 
-- Create cluster
-- Copy connection string
-- Use it as `DB_URI`
+1. Create MongoDB Atlas account
+2. Create a cluster
+3. Copy connection string
+4. Use it as `DB_URI`
 
 ---
 
-## 🔐 Environment Variables
+# 🔐 Environment Variables Setup
 
-Create this file:
+Create the following file:
 
-### `.env.development.local`
+## `.env.development.local`
 
 ```env
 NODE_ENV=development
@@ -117,15 +122,17 @@ QSTASH_TOKEN=your_qstash_token_here
 EMAIL_PASSWORD=your_gmail_app_password
 ```
 
-> All environment variables are **strings**. This is expected.
+> ⚠️ All environment variables are **strings** — this is correct behavior.
 
 ---
 
-## 🔐 Authentication (JWT)
+# 🔐 Authentication (JWT)
 
-- User logs in / signs up
-- JWT is generated
-- Token must be sent in headers
+### How Authentication Works
+
+1. User registers or logs in
+2. Server generates JWT token
+3. Client sends token in headers for protected routes
 
 ### Required Header
 
@@ -137,52 +144,52 @@ Used for:
 
 - Creating subscriptions
 - Fetching user subscriptions
-- Protected routes
+- Any protected endpoint
 
 ---
 
-## 🛡️ Arcjet Security
+# 🛡️ Arcjet Security Configuration
 
-### What Arcjet Handles
+### What Arcjet Protects
 
 - Bot detection
 - Rate limiting
-- XSS / SQLi protection
+- XSS & SQL injection protection
 
 ### Important Rules
 
-- DRY_RUN in development
-- LIVE in production
-- **No invalid categories**
+- **DRY_RUN** mode in development
+- **LIVE** mode in production
+- Only valid bot categories allowed
 
-### Valid Bot Categories Used
+### Valid Categories Used
 
-- CATEGORY:SEARCH_ENGINE
-- CATEGORY:AI
-- CATEGORY:MONITORING
+- `CATEGORY:SEARCH_ENGINE`
+- `CATEGORY:AI`
+- `CATEGORY:MONITORING`
 
-> Arcjet warnings about `127.0.0.1` in development are normal.
+> ⚠️ Arcjet warnings about `127.0.0.1` in development are **normal and safe**.
 
 ---
 
-## 📬 Email Sending (Gmail App Password)
+# 📬 Email Sending (Gmail App Password)
 
-### Why App Password?
+### Why Gmail App Password?
 
-Gmail blocks normal passwords for Nodemailer.
+Gmail blocks direct password access for Nodemailer.
 
-### Steps
+### Steps to Generate App Password
 
 1. Enable **2-Step Verification** in Google Account
 2. Go to **Security → App Passwords**
-3. Create password for:
+3. Create new password:
 
    - App: Mail
-   - Device: Other
+   - Device: Other (Node App)
 
-4. Copy password
+4. Copy the generated password
 
-Add to `.env`:
+Add it to `.env`:
 
 ```env
 EMAIL_PASSWORD=abcd efgh ijkl mnop
@@ -190,7 +197,7 @@ EMAIL_PASSWORD=abcd efgh ijkl mnop
 
 ---
 
-## 🔁 Upstash Workflow & QStash
+# 🔁 Upstash Workflow & QStash
 
 ### Purpose
 
@@ -198,9 +205,9 @@ EMAIL_PASSWORD=abcd efgh ijkl mnop
 - Email reminders
 - Retry-safe workflows
 
-### Critical Rule
+### Critical Rule (Very Important)
 
-> ❌ Upstash **cannot call localhost**
+> ❌ **Upstash cannot call localhost**
 
 ### Correct Usage
 
@@ -210,17 +217,19 @@ if (NODE_ENV === "production") {
 }
 ```
 
-- Local development → workflow skipped
+- Development → workflow skipped
 - Production → workflow executed
 
 ---
 
-## 📦 Subscription Model Behavior
+# 📦 Subscription Model Logic
 
-- `renewalDate` auto-calculated from `frequency`
-- `status` auto-updated to `expired` if renewal date < today
+### Automatic Behavior
 
-### Example Request Body
+- `renewalDate` auto-calculated using `frequency`
+- `status` becomes `expired` if renewal date < today
+
+### Example Subscription Request Body
 
 ```json
 {
@@ -236,9 +245,11 @@ if (NODE_ENV === "production") {
 
 ---
 
-## 📡 API Endpoints
+# 📡 API Endpoints
 
-### Auth
+---
+
+## 🔐 Auth Routes
 
 ```
 POST /api/v1/auth/register
@@ -247,40 +258,40 @@ POST /api/v1/auth/login
 
 ---
 
-### Subscriptions
+## 📦 Subscription Routes
 
-#### Create Subscription
+### Create Subscription
 
 ```
 POST /api/v1/subscriptions
 Authorization: Bearer <JWT>
 ```
 
-#### Get User Subscriptions
+### Get User Subscriptions
 
 ```
 GET /api/v1/subscriptions/user/:userId
 Authorization: Bearer <JWT>
 ```
 
-> Token user ID must match URL user ID.
+> ⚠️ Token user ID **must match** the URL user ID.
 
 ---
 
-## ❌ Common Mistakes & Fixes
+# ❌ Common Mistakes & Fixes
 
 | Mistake                         | Result               |
 | ------------------------------- | -------------------- |
-| GET request with body           | body-parser error    |
-| Using future startDate          | expired subscription |
+| GET request with body           | body-parser crash    |
+| Future startDate                | expired subscription |
 | Calling workflow in dev         | fetch failed         |
-| Using `next()` in Mongoose hook | crash                |
-| Using invalid Arcjet category   | Arcjet error         |
-| Wrong user ID in GET            | 403 Forbidden        |
+| Using `next()` in Mongoose hook | runtime error        |
+| Invalid Arcjet category         | Arcjet error         |
+| Wrong user ID                   | 403 Forbidden        |
 
 ---
 
-## ▶️ Run the Project
+# ▶️ Run the Project
 
 ```bash
 npm run dev
@@ -295,21 +306,21 @@ Connected to database in development mode
 
 ---
 
-## ✅ Final Notes
+# ✅ Final Notes
 
-- Fully secure backend architecture
-- Clean separation of concerns
-- Production-ready design
-- Scales well for SaaS applications
+- Clean, scalable backend architecture
+- Security, workflows, and validation handled correctly
+- Ready for production use
+- Ideal foundation for SaaS applications
 
 ---
 
-## 🚀 Future Enhancements
+# 🚀 Future Enhancements
 
 - Upcoming renewals endpoint
 - Subscription cancellation
-- Pagination & filtering
-- Admin access
+- Pagination & filters
+- Admin dashboard
 - Frontend integration
 
 ```
