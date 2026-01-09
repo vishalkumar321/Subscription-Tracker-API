@@ -1,328 +1,175 @@
-```md
 # 📦 Subscription Tracker API
 
-A **production-grade REST API** for managing user subscriptions (Netflix, Spotify, etc.) built using **Node.js, Express, MongoDB**, secured with **Arcjet**, automated using **Upstash Workflow**, and supporting **email notifications** via **Gmail App Password**.
-
-This README is **complete and standalone**.
-Anyone can build the **entire project from scratch** by following the steps below — **no external resources required**.
+A **production-grade REST API** for managing user subscriptions (Netflix, Spotify, etc.) built using **Node.js, Express, and MongoDB Atlas**. This system features automated email reminders via **Upstash Workflows**, multi-layer security via **Arcjet**, and a professional error-handling architecture.
 
 ---
 
-# 🧠 Tech Stack
+## 🧠 Tech Stack
 
-- **Node.js** (ES Modules)
-- **Express.js**
-- **MongoDB + Mongoose**
-- **JWT Authentication**
-- **Arcjet** (Bot detection, rate limiting, security)
-- **Upstash QStash + Workflow**
-- **Nodemailer** (Gmail App Password)
-- **dotenv**
+- **Runtime:** Node.js (ES Modules)
+- **Framework:** Express.js
+- **Database:** MongoDB Atlas (Cloud)
+- **Security:** Arcjet (Bot Detection, Rate Limiting, Shield)
+- **Automation:** Upstash QStash & Workflows
+- **Email:** Nodemailer (Gmail SMTP)
 
 ---
 
-# 📁 Project Folder Structure
-```
+## 📁 Project Structure
 
 ```text
 subscription-tracker/
-│
 ├── config/
-│ ├── env.js # Environment variable loader
-│ ├── arject.js # Arcjet security configuration
-│ └── upstash.js # Upstash QStash / Workflow client
-│
+│   ├── env.js             # Environment variables validation
+│   ├── arcjet.js          # Security rules (Bot/Rate limit)
+│   └── upstash.js         # Workflow client setup
 ├── controllers/
-│ ├── auth.controller.js
-│ ├── subscription.controller.js
-│ └── workflow.controller.js
-│
+│   ├── auth.controller.js  # SignUp, SignIn
+│   ├── subscription.controller.js
+│   └── workflow.controller.js     # Renewal logic
 ├── database/
-│ └── mongodb.js # MongoDB connection logic
-│
+│   └── mongodb.js         # Atlas connection logic
 ├── middlewares/
-│ ├── auth.middleware.js # JWT authorization middleware
-│ ├── arject.middleware.js # Arcjet middleware
-│ └── error.middleware.js # Global error handler
-│
+│   ├── auth.middleware.js # JWT verification
+│   ├── arcjet.middleware.js# Security layer
+│   └── error.middleware.js # Global error handler
 ├── models/
-│ ├── user.model.js
-│ └── subscription.model.js
-│
+│   ├── user.model.js
+│   └── subscription.model.js # Auto-calculates renewal dates
 ├── routes/
-│ ├── auth.routes.js
-│ ├── user.routes.js
-│ ├── subscription.routes.js
-│ └── workflow.routes.js
-│
+│   ├── auth.routes.js
+│   ├── user.routes.js
+│   ├── subscription.routes.js
+│   └── workflow.routes.js
 ├── .env.development.local
-├── .env.production.local
-├── app.js
-├── package.json
-└── README.md
+├── app.js                 # Entry point
+└── package.json
+
 ```
 
-````
-
 ---
 
-# ⚙️ Step-by-Step Project Setup
+## ⚙️ Step-by-Step Setup
 
----
-
-## 1️⃣ Clone Repository & Install Dependencies
+### 1. Clone & Install
 
 ```bash
-git clone <repository-url>
-cd subscription-tracker
+git clone https://github.com/vishalkumar321/Subscription-Tracker-API.git
+cd Subscription-Tracker-API
 npm install
-````
 
----
-
-## 2️⃣ MongoDB Setup (Database)
-
-### Option A — Local MongoDB
-
-```text
-mongodb://127.0.0.1:27017/subscription-tracker
 ```
 
-### Option B — MongoDB Atlas
+### 2. MongoDB Atlas Setup (Cloud Database)
 
-1. Create MongoDB Atlas account
-2. Create a cluster
-3. Copy connection string
-4. Use it as `DB_URI`
+1. Log in to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
+2. Create a **Shared Cluster** (Free).
+3. Go to **Network Access** -> **Add IP Address** -> Select "Allow Access from Anywhere".
+4. Go to **Database Access** -> Create a user with a username and password.
+5. Click **Connect** -> **Drivers** -> Copy the `SRV` connection string.
 
----
+### 3. Upstash & Arcjet Setup
 
-# 🔐 Environment Variables Setup
+- **Arcjet:** Sign up at [Arcjet](https://arcjet.com). Create a new site and copy your `ARCJET_KEY`.
+- **Upstash:** Sign up at [Upstash](https://upstash.com). Create a **QStash** instance and copy the `QSTASH_URL` and `QSTASH_TOKEN`.
 
-Create the following file:
+### 4. Configure Environment Variables
 
-## `.env.development.local`
+Create `.env.development.local` in the root:
 
 ```env
-NODE_ENV=development
 PORT=5500
+NODE_ENV=development
 
-DB_URI=mongodb://127.0.0.1:27017/subscription-tracker
+# Database (Paste your Atlas SRV string here)
+DB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/sub-tracker
 
-JWT_SECRET=supersecretkey
+# JWT
+JWT_SECRET=your_random_secret_key
 JWT_EXPIRES_IN=7d
 
-SERVER_URL=http://localhost:5500
+# Arcjet Security
+ARCJET_KEY=ajkey_xxxxxxxx
 
-ARCJET_KEY=your_arcjet_key_here
-
+# Upstash Workflows
 QSTASH_URL=https://qstash.upstash.io
-QSTASH_TOKEN=your_qstash_token_here
+QSTASH_TOKEN=your_token
+SERVER_URL=http://localhost:5500 # Update this when using Ngrok
 
-EMAIL_PASSWORD=your_gmail_app_password
-```
-
-> ⚠️ All environment variables are **strings** — this is correct behavior.
-
----
-
-# 🔐 Authentication (JWT)
-
-### How Authentication Works
-
-1. User registers or logs in
-2. Server generates JWT token
-3. Client sends token in headers for protected routes
-
-### Required Header
-
-```
-Authorization: Bearer <JWT_TOKEN>
-```
-
-Used for:
-
-- Creating subscriptions
-- Fetching user subscriptions
-- Any protected endpoint
-
----
-
-# 🛡️ Arcjet Security Configuration
-
-### What Arcjet Protects
-
-- Bot detection
-- Rate limiting
-- XSS & SQL injection protection
-
-### Important Rules
-
-- **DRY_RUN** mode in development
-- **LIVE** mode in production
-- Only valid bot categories allowed
-
-### Valid Categories Used
-
-- `CATEGORY:SEARCH_ENGINE`
-- `CATEGORY:AI`
-- `CATEGORY:MONITORING`
-
-> ⚠️ Arcjet warnings about `127.0.0.1` in development are **normal and safe**.
-
----
-
-# 📬 Email Sending (Gmail App Password)
-
-### Why Gmail App Password?
-
-Gmail blocks direct password access for Nodemailer.
-
-### Steps to Generate App Password
-
-1. Enable **2-Step Verification** in Google Account
-2. Go to **Security → App Passwords**
-3. Create new password:
-
-   - App: Mail
-   - Device: Other (Node App)
-
-4. Copy the generated password
-
-Add it to `.env`:
-
-```env
+# Email (Gmail App Password)
+EMAIL_USER=your-email@gmail.com
 EMAIL_PASSWORD=abcd efgh ijkl mnop
+
 ```
 
 ---
 
-# 🔁 Upstash Workflow & QStash
+## 🚀 Key Features
 
-### Purpose
+### 🔐 Multi-Layer Security
 
-- Background jobs
-- Email reminders
-- Retry-safe workflows
+Protected by **Arcjet**, the API includes:
 
-### Critical Rule (Very Important)
+- **Bot Detection:** Blocks automated scrapers.
+- **Rate Limiting:** Prevents brute-force attacks on login.
+- **Shield:** Protects against SQL Injection and XSS.
 
-> ❌ **Upstash cannot call localhost**
+### 🔁 Automated Renewal Reminders
 
-### Correct Usage
+The system uses **Upstash Workflows** to manage background jobs. When a subscription is created, the workflow schedules reminders:
 
-```js
-if (NODE_ENV === "production") {
-  workflowClient.trigger(...)
-}
-```
+- **7 Days Before:** Initial "Heads up" email.
+- **3 Days Before:** Final "Action required" email.
 
-- Development → workflow skipped
-- Production → workflow executed
+> ⚠️ **Local Testing Tip:** Since Upstash is a cloud service, it cannot "see" your `localhost`. To test workflows locally, use **Ngrok**:
+>
+> 1. Run `ngrok http 5500`
+> 2. Copy the `https://...` URL provided.
+> 3. Update `SERVER_URL` in your `.env` with that Ngrok URL.
 
----
+### 📧 Email Configuration
 
-# 📦 Subscription Model Logic
-
-### Automatic Behavior
-
-- `renewalDate` auto-calculated using `frequency`
-- `status` becomes `expired` if renewal date < today
-
-### Example Subscription Request Body
-
-```json
-{
-  "name": "Netflix Premium",
-  "price": 649,
-  "currency": "INR",
-  "frequency": "monthly",
-  "category": "entertainment",
-  "paymentMethod": "Credit Card",
-  "startDate": "2026-01-01"
-}
-```
+1. Enable **2-Step Verification** on your Gmail account.
+2. Go to **App Passwords** in Google Security settings.
+3. Generate a code for "Mail" on your "Windows/Mac" device.
+4. Use that 16-character code in your `.env`.
 
 ---
 
-# 📡 API Endpoints
+## 📡 API Endpoints
+
+### Authentication
+
+| Method | Endpoint               | Description       |
+| ------ | ---------------------- | ----------------- |
+| `POST` | `/api/v1/auth/sign-up` | Register User     |
+| `POST` | `/api/v1/auth/sign-in` | Login & Get Token |
+
+### Subscriptions (Requires Bearer Token)
+
+| Method | Endpoint                         | Description            |
+| ------ | -------------------------------- | ---------------------- |
+| `POST` | `/api/v1/subscriptions`          | Create Subscription    |
+| `GET`  | `/api/v1/subscriptions/user/:id` | Get User Subscriptions |
+| `GET`  | `/api/v1/subscriptions/:id`      | Get Specific Sub       |
 
 ---
 
-## 🔐 Auth Routes
-
-```
-POST /api/v1/auth/register
-POST /api/v1/auth/login
-```
-
----
-
-## 📦 Subscription Routes
-
-### Create Subscription
-
-```
-POST /api/v1/subscriptions
-Authorization: Bearer <JWT>
-```
-
-### Get User Subscriptions
-
-```
-GET /api/v1/subscriptions/user/:userId
-Authorization: Bearer <JWT>
-```
-
-> ⚠️ Token user ID **must match** the URL user ID.
-
----
-
-# ❌ Common Mistakes & Fixes
-
-| Mistake                         | Result               |
-| ------------------------------- | -------------------- |
-| GET request with body           | body-parser crash    |
-| Future startDate                | expired subscription |
-| Calling workflow in dev         | fetch failed         |
-| Using `next()` in Mongoose hook | runtime error        |
-| Invalid Arcjet category         | Arcjet error         |
-| Wrong user ID                   | 403 Forbidden        |
-
----
-
-# ▶️ Run the Project
+## ▶️ Running the App
 
 ```bash
+# Development mode (with nodemon)
 npm run dev
-```
 
-Expected output:
+# Production mode
+npm start
 
-```
-Subscription Tracker API is running on http://localhost:5500
-Connected to database in development mode
 ```
 
 ---
 
-# ✅ Final Notes
+## ✅ Common Troubleshooting
 
-- Clean, scalable backend architecture
-- Security, workflows, and validation handled correctly
-- Ready for production use
-- Ideal foundation for SaaS applications
-
----
-
-# 🚀 Future Enhancements
-
-- Upcoming renewals endpoint
-- Subscription cancellation
-- Pagination & filters
-- Admin dashboard
-- Frontend integration
-
-```
-
-```
+- **Error: "Arcjet key missing":** Ensure your `.env.development.local` file is in the root directory and the key is correct.
+- **Emails not sending:** Ensure your Gmail App Password is correct and you are not using your regular login password.
+- **Database connection fail:** Ensure you whitelisted `0.0.0.0/0` in MongoDB Atlas Network Access.
